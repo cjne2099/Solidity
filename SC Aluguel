@@ -8,7 +8,7 @@ pragma solidity ^0.7.0;
 contract ContratoDeAluguel {
 
     uint valor;                     // Valor do aluguel sem encargos
-    uint vencimento;                // Data de pagamento sem encargos
+    uint vencimento;                // Ciclo para para pagamento sem encargos
     address payable locador;        // Endereço da conta do Locador
     address locatario;              // Endereço da conta do Locatário
     address payable seguro;         // Endereço da conta do Seguro Fiança
@@ -17,11 +17,11 @@ contract ContratoDeAluguel {
     uint inicio;                    // Unix timestamp do momento de início do contrato (deploy)
     uint prazo;                     // Prazo em meses do contrato
     uint contador;                  // Contador de inadimplencia
-    mapping (uint=>uint) meses;     // Mapear data do pagamento
+    mapping (uint=>uint) meses;     // Mapear data do pagamento para a Competencia
     
     constructor(uint valorDoAluguel, uint dataVencimento, uint valorDaMulta, uint prazoEmMeses, address contaLocatario, address payable contaSeguroFianca) {
         valor = valorDoAluguel;
-	      prazo = prazoEmMeses;
+	    prazo = prazoEmMeses;
         locatario = contaLocatario;
         seguro = contaSeguroFianca;
         multa = valorDaMulta;
@@ -36,8 +36,9 @@ contract ContratoDeAluguel {
     }
     
     function pagaraluguel (uint mes) payable public {
+        require (mes > 0 && mes <= prazo, "Competencia inexistente no contrato.");
         require (!mesestapago (mes), "Competencia paga");
-        if (((block.timestamp - inicio *1 days) % vencimento) == 0) {
+        if ((block.timestamp - inicio *1 days) % vencimento > 0 && (block.timestamp - inicio *1 days) % vencimento < 1) {
             require(msg.value >= valor, "Valor de aluguel incorreto.");
             meses[mes] = block.timestamp;
             contador = 0;
@@ -78,4 +79,4 @@ contract ContratoDeAluguel {
         seguro.transfer(resgateseg);
     }
     
-}    
+}  
