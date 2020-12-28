@@ -73,7 +73,8 @@ contract ContratoDeAluguel {
     }
     
     function consultarsaldo () view public returns (uint256) { // consultar o saldo disponível para resgate (aluguel + seguro)
-        return address(this).balance;
+        require(msg.sender == locador, "Somente locador pode consultar o saldo.");
+	return address(this).balance;
     }
     
     function resgatealuguel(uint _resgatealuguel) public { // resgatar o aluguel. Seguro só pode ser resgatado se estiver liberado
